@@ -1,0 +1,20 @@
+STEERING COMMITTEE CALL — MEETING NOTES
+Synthetic sample document for the Dripi demo.
+Date: 14 October 2026
+Attendees: ClinicCo leadership, Northwind delivery lead, product owner (all fictional)
+
+1. Status
+Design is signed off. Build is on track for the current sprint plan.
+
+2. Go-live date
+Clinic onboarding for the new booking flow cannot start until January. Go-live moves to 15 January so it lines up with clinic onboarding. Northwind to confirm the impact on the team plan.
+
+3. Reporting
+Clinic managers want reports to update as soon as data changes, so they can see same-day confirmations.
+
+4. Clinics in scope
+Two more clinics joined the group in September. The rollout should cover all 14 clinics at go-live.
+
+5. Actions
+- Northwind to send a revised plan by 21 October.
+- ClinicCo to confirm the SMS budget.

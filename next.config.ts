@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Native / Node-only packages stay out of the bundle.
+  serverExternalPackages: ["@libsql/client", "libsql", "pdf-parse", "mammoth"],
   turbopack: {
     rules: {
       "*.css": {

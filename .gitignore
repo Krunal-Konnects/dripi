@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# keep the template
+!.env.example
+
+# local database
+/data/
+
+# earlier partial build (contains its own .env) — never commit
+/_old-attempt/

@@ -1,0 +1,17 @@
+COMPLIANCE REVIEW NOTES — CLINIC PORTAL V2
+Synthetic sample document for the Dripi demo.
+Reviewer: Compliance office, ClinicCo Health (fictional)
+Date: 8 October 2026
+
+Summary
+The design meets most privacy requirements. Two items must be fixed before compliance sign-off.
+
+Findings
+1. Access logging. All access to patient records must be logged and the logs kept for at least six years. Logs must be searchable by patient and by staff member.
+2. Authentication. Clinic staff accounts must use multi-factor authentication for every sign-in. Optional MFA is not acceptable for staff who can view lab results.
+3. Hosting. Hosting in the client's existing cloud region is acceptable.
+4. Lab results. Showing completed results only is acceptable.
+5. Session timeout. Staff sessions should end after 15 minutes of inactivity.
+
+Next steps
+The Supplier should confirm how items 1, 2 and 5 will be addressed before UAT starts.

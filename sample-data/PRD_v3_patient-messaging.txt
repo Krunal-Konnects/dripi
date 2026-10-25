@@ -1,0 +1,27 @@
+PRD v3 — PATIENT MESSAGING AND NOTIFICATIONS
+Synthetic sample document for the Dripi demo.
+Owner: Product team, ClinicCo Health (fictional)
+Status: Draft for review, 10 October 2026
+
+Problem
+Patients miss appointments because reminders arrive too late or go unread. Clinics want a faster way to confirm or reschedule.
+
+Goals
+- Cut no-shows by sending reminders 48 hours and 2 hours before each appointment.
+- Let patients confirm, cancel or reschedule from the reminder itself.
+
+Requirements
+R1. Patients can reply to appointment reminders by SMS.
+R2. Reminders are sent by email and SMS, based on the patient's saved preference.
+R3. All patient-facing screens must be available in English and Spanish.
+R4. The portal works on all modern browsers.
+R5. Clinic managers see a dashboard of confirmations per day.
+R6. Patients can download their lab results as a PDF.
+
+Out of scope for this PRD
+- Two-way chat with clinicians.
+- WhatsApp messaging.
+
+Open questions
+- Which SMS provider should we use?
+- Do we need patient consent text before the first SMS?

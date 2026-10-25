@@ -1,0 +1,41 @@
+STATEMENT OF WORK — CLINIC PORTAL V2
+Synthetic sample document for the Dripi demo. Not a real contract.
+
+Client: ClinicCo Health (fictional)
+Supplier: Northwind Digital (fictional)
+Signed: 2 September 2026
+
+1. Purpose
+The Supplier will design, build and deploy version 2 of the ClinicCo patient portal. The portal lets patients book appointments, view lab results and receive notifications from their clinic.
+
+2. In-scope features
+2.1 Appointment booking for up to 12 clinics.
+2.2 Lab results viewer for completed results only.
+2.3 Patient notifications are delivered by email only.
+2.4 Reports refresh nightly.
+2.5 Clinic staff sign in with email and password, with optional authenticator-app MFA.
+2.6 The patient portal is delivered in English.
+
+3. Non-functional requirements
+3.1 Supported browsers: Chrome and Edge, latest two versions.
+3.2 Availability target: 99.5% per calendar month, excluding planned maintenance.
+3.3 Audit logs are retained for 12 months and then deleted.
+3.4 Data is hosted in the client's existing cloud region.
+
+4. Out of scope
+4.1 Native mobile apps.
+4.2 Integration with external pharmacy systems.
+4.3 Data migration from the version 1 portal beyond active patient accounts.
+
+5. Timeline and milestones
+5.1 Design sign-off: 30 September 2026.
+5.2 User acceptance testing: 2 November to 20 November 2026.
+5.3 Production go-live: 30 November 2026.
+5.4 Hypercare: 4 weeks after go-live.
+
+6. Commercials
+6.1 Fixed price, paid in three milestones: design sign-off (30%), UAT start (40%), go-live (30%).
+6.2 Any change to scope, timeline or non-functional requirements requires a written change request approved by both parties.
+
+7. Acceptance
+The portal is accepted when all in-scope features pass UAT with no open severity-1 or severity-2 defects.
