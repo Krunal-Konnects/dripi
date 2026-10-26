@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Eye, FileCheck2, Plus, ScanSearch, Search } from "lucide-react";
+import { Eye, FileCheck2, Pencil, Plus, ScanSearch, Search } from "lucide-react";
 import { SowDialog } from "./sow-dialog";
 import { Eyebrow, Mark } from "./ui";
 
@@ -43,7 +43,7 @@ export function ProjectsView({ projects }: { projects: P[] }) {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-[14px]">
+            <table className="w-full min-w-[980px] text-[14px]">
               <thead>
                 <tr className="text-left text-[12.5px] text-faint">
                   <th className="font-medium px-5 py-3">ID</th>
@@ -51,6 +51,7 @@ export function ProjectsView({ projects }: { projects: P[] }) {
                   <th className="font-medium px-3 py-3">SOW</th>
                   <th className="font-medium px-3 py-3">Created</th>
                   <th className="font-medium px-3 py-3">Last checked</th>
+                  <th className="font-medium px-3 py-3">Edit</th>
                   <th className="font-medium px-5 py-3 text-right">Scope check</th>
                 </tr>
               </thead>
@@ -77,6 +78,12 @@ export function ProjectsView({ projects }: { projects: P[] }) {
                     <td className="px-3 py-4">
                       {p.checked ? <span className="text-muted tnum">{p.checked}</span> : <span className="text-[12px] px-2 py-1 rounded-md bg-sunken text-muted">Not run yet</span>}
                     </td>
+                    <td className="px-3 py-3">
+                      <Link href={`/projects/${p.id}/edit`} aria-label={`Edit ${p.name}`} title="Edit project, SOW and stakeholders"
+                        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-[13px] font-medium text-muted hover:text-ink hover:bg-surface hover:ring-1 hover:ring-line-strong transition">
+                        <Pencil size={14} aria-hidden="true" />Edit
+                      </Link>
+                    </td>
                     <td className="px-5 py-3 text-right">
                       <Link href={`/projects/${p.id}/check`} aria-label={`Run scope check for ${p.name}`}
                         className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-[13px] font-medium border border-line-strong bg-surface hover:bg-ink hover:text-bg hover:border-ink transition">
@@ -86,7 +93,7 @@ export function ProjectsView({ projects }: { projects: P[] }) {
                   </tr>
                 ))}
                 {list.length === 0 && (
-                  <tr><td colSpan={6} className="px-5 py-10 text-center text-muted">No projects match “{q}”.</td></tr>
+                  <tr><td colSpan={7} className="px-5 py-10 text-center text-muted">No projects match “{q}”.</td></tr>
                 )}
               </tbody>
             </table>

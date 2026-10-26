@@ -66,3 +66,7 @@ export async function openDecisionCount(userId: string) {
   const rows = await db.select({ status: decisions.status }).from(decisions).where(eq(decisions.userId, userId));
   return rows.filter((r) => r.status === "Open" || r.status === "Overdue").length;
 }
+
+export async function getStakeholders(projectId: string) {
+  return db.select().from(stakeholders).where(eq(stakeholders.projectId, projectId));
+}
