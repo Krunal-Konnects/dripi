@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db, decisions, findings, projects, stakeholders, users } from "@/db";
 import { jsonError, ownedProject, rateLimited, requireApiUser } from "@/lib/api";
 import { sendDecisionEmail } from "@/lib/email";
+import { isGuestEmail } from "@/lib/guest";
 
 const inFlight = new Set<string>();
 
@@ -20,7 +21,8 @@ export async function POST(req: Request, ctx: RouteContext<"/api/findings/[id]/s
   const to = (b.email ?? f.recipientEmail ?? "").trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return jsonError("Enter a valid recipient email.");
   if (!b.subject?.trim() || !b.body?.trim()) return jsonError("Subject and message can't be empty.");
-  if (rateLimited(`send:${user.id}`, 50)) return jsonError("You've sent 50 emails this hour. Try again later.", 429);
+  const guest = isGuestEmail(user.email);
+  if (rateLimited(`send:${user.id}`, guest ? 5 : 50)) return jsonError(guest ? "Guests can send 5 emails per hour. Create an account to send more." : "You've sent 50 emails this hour. Try again later.", 429);
   if (inFlight.has(id)) return jsonError("Already sending this email.", 409);
   inFlight.add(id);
 

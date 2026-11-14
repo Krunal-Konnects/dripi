@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
+import { CheckCircle2, Eye, EyeOff, Loader2, PlayCircle } from "lucide-react";
 import { api, ApiError } from "@/lib/client";
 import { Btn, Field, Logo, cx } from "./ui";
 
@@ -15,6 +15,21 @@ export function AuthScreen({ mode, notice, initialEmail = "" }: { mode: "login" 
   const [show, setShow] = useState(false);
   const [err, setErr] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [guestBusy, setGuestBusy] = useState(false);
+  const [guestErr, setGuestErr] = useState("");
+
+  const tryGuest = async () => {
+    setGuestBusy(true);
+    setGuestErr("");
+    try {
+      const res = await api<{ projectId: string }>("/api/auth/guest", { method: "POST" });
+      router.replace(`/projects/${res.projectId}/check`);
+      router.refresh();
+    } catch (e) {
+      setGuestErr((e as Error).message);
+      setGuestBusy(false);
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,6 +107,21 @@ export function AuthScreen({ mode, notice, initialEmail = "" }: { mode: "login" 
             <Btn size="lg" type="submit" disabled={busy}>
               {busy ? (<><Loader2 size={16} className="animate-spin" aria-hidden="true" />{mode === "login" ? "Logging in" : "Creating account"}</>) : mode === "login" ? "Log in" : "Create account"}
             </Btn>
+            {mode === "login" && (
+              <>
+                <div className="flex items-center gap-3 text-[12px] text-faint" aria-hidden="true">
+                  <span className="h-px flex-1 bg-line" />or<span className="h-px flex-1 bg-line" />
+                </div>
+                <Btn type="button" variant="ghost" size="lg" onClick={tryGuest} disabled={guestBusy || busy}>
+                  {guestBusy ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : <PlayCircle size={16} aria-hidden="true" />}
+                  {guestBusy ? "Setting up your sample project…" : "Try as guest"}
+                </Btn>
+                <p className="text-center text-[12.5px] text-faint -mt-1">
+                  Explore a ready-made sample project with documents. No sign-up. Guest data is cleared after 24 hours.
+                </p>
+                {guestErr && <p role="alert" className="text-center text-[12.5px] text-high">{guestErr}</p>}
+              </>
+            )}
             <p className="text-center text-[13.5px] text-muted">
               {mode === "login" ? "New to Dripi? " : "Already have an account? "}
               <Link href={mode === "login" ? "/signup" : "/login"} className="text-ink font-medium underline underline-offset-4 decoration-line-strong hover:decoration-ink">

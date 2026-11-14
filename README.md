@@ -12,7 +12,7 @@ npm run dev          # http://localhost:3000
 
 Then:
 
-1. **Sign up**, then log in.
+1. **Sign up**, then log in, or click **Try as guest** on the login page for a ready-made sample project (guest data is cleared after 24 hours).
 2. **New project** → click **Fill with sample project** (or enter your own) → **Create project**.
 3. **Scope check** → **Use sample documents** (or upload PDF/DOCX/TXT files) → **Let's compare**.
 4. On **Results**, review the ranked conflicts → **Notify** → edit the email → **Send email**.

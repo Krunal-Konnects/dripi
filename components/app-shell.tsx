@@ -10,7 +10,7 @@ import { Btn, Logo, cx } from "./ui";
 import { ToastProvider } from "./toast";
 
 type ShellProps = {
-  user: { name: string; email: string };
+  user: { name: string; email: string; isGuest?: boolean };
   openCount: number;
   projects: { id: string; code: string; name: string }[];
   children: ReactNode;
@@ -57,9 +57,9 @@ export function AppShell({ user, openCount, projects, children }: ShellProps) {
     return () => window.removeEventListener("keydown", k);
   }, []);
 
-  const logout = async () => {
+  const logout = async (next = "/login") => {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.replace("/login");
+    router.replace(next);
     router.refresh();
   };
 
@@ -70,7 +70,7 @@ export function AppShell({ user, openCount, projects, children }: ShellProps) {
       { label: "Go to Decisions", icon: ListChecks, run: () => router.push("/decisions") },
       ...projects.map((p) => ({ label: `Scope check · ${p.name}`, hint: p.code, icon: ScanSearch, run: () => router.push(`/projects/${p.id}/check`) })),
       { label: theme === "dark" ? "Switch to light theme" : "Switch to dark theme", icon: theme === "dark" ? Sun : Moon, run: toggle },
-      { label: "Log out", icon: LogOut, run: logout },
+      { label: "Log out", icon: LogOut, run: () => logout() },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [projects, theme],
@@ -137,11 +137,11 @@ export function AppShell({ user, openCount, projects, children }: ShellProps) {
               {!collapsed && (
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-medium truncate">{user.name}</div>
-                  <div className="text-[12px] text-faint truncate">{user.email}</div>
+                  <div className="text-[12px] text-faint truncate">{user.isGuest ? "Guest session · 24 hours" : user.email}</div>
                 </div>
               )}
             </div>
-            <Btn variant="ghost" size={collapsed ? "icon" : "md"} className={collapsed ? "mx-auto" : "w-full"} onClick={logout} aria-label="Log out">
+            <Btn variant="ghost" size={collapsed ? "icon" : "md"} className={collapsed ? "mx-auto" : "w-full"} onClick={() => logout()} aria-label="Log out">
               <LogOut size={16} aria-hidden="true" />
               {!collapsed && "Log out"}
             </Btn>
@@ -156,9 +156,17 @@ export function AppShell({ user, openCount, projects, children }: ShellProps) {
               <Link href="/projects" aria-label="Projects" className={cx("h-9 w-9 rounded-[10px] inline-flex items-center justify-center", active === "projects" ? "bg-surface ring-1 ring-line" : "text-muted")}><FolderOpen size={17} aria-hidden="true" /></Link>
               <Link href="/decisions" aria-label="Decisions" className={cx("h-9 w-9 rounded-[10px] inline-flex items-center justify-center", active === "decisions" ? "bg-surface ring-1 ring-line" : "text-muted")}><ListChecks size={17} aria-hidden="true" /></Link>
               <Btn variant="quiet" size="icon" onClick={toggle} aria-label="Toggle theme">{theme === "dark" ? <Sun size={17} aria-hidden="true" /> : <Moon size={17} aria-hidden="true" />}</Btn>
-              <Btn variant="quiet" size="icon" onClick={logout} aria-label="Log out"><LogOut size={17} aria-hidden="true" /></Btn>
+              <Btn variant="quiet" size="icon" onClick={() => logout()} aria-label="Log out"><LogOut size={17} aria-hidden="true" /></Btn>
             </div>
           </header>
+          {user.isGuest && (
+            <div role="status" className="border-b border-line bg-accent-soft">
+              <div className="max-w-[1180px] mx-auto px-4 sm:px-8 lg:px-12 py-2.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-[13px]">
+                <span><b className="font-semibold">You’re exploring as a guest.</b> The sample project and documents are ready; run a scope check to see Dripi work. Guest data is cleared after 24 hours.</span>
+                <button onClick={() => logout("/signup")} className="font-semibold text-accent underline underline-offset-4 cursor-pointer whitespace-nowrap">Create an account</button>
+              </div>
+            </div>
+          )}
           <main className="flex-1 w-full max-w-[1180px] mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-12 pb-24">{children}</main>
         </div>
       </div>
