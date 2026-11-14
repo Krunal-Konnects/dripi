@@ -1,12 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertCircle, ArrowLeft, ArrowRight, Check, CheckCircle2, FileCheck2, FileText, Loader2, Mail, Plus, ShieldCheck, Trash2, Users, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Check, CheckCircle2, FileCheck2, FileText, Loader2, Mail, Plus, ShieldCheck, Sparkles, Trash2, Users, X } from "lucide-react";
 import { api, extractFile } from "@/lib/client";
 import { DOC_TYPES } from "@/lib/constants";
+import { SAMPLE_SOW } from "@/lib/samples";
 import { FileDrop, sampleFile } from "./file-drop";
+import { useToast } from "./toast";
 import { Btn, Eyebrow, cx } from "./ui";
 
 export const DOC_ICON: Record<string, React.ComponentType<{ size?: number; className?: string; "aria-hidden"?: boolean }>> = {
@@ -23,13 +25,15 @@ const SAMPLES = [
   { type: "Meeting notes", path: "/samples/Steering_call_14-Oct.txt" },
 ];
 
-export function ScopeCheck({ project, sow, docs, mode }: {
+export function ScopeCheck({ project, sow, docs, mode, autoSamples = false }: {
   mode: { provider: string; model: string };
+  autoSamples?: boolean;
   project: { id: string; code: string; name: string; signoff: string; created: string; lastChecked: string; hasResults: boolean };
   sow: { fileName: string; charCount: number } | null;
   docs: Doc[];
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [rows, setRows] = useState<Row[]>(docs.map((d) => ({ key: d.id, doc: d, type: d.type, state: "ready", file: d.fileName })));
   const [steps, setSteps] = useState<Step[] | null>(null);
   const [runError, setRunError] = useState("");
@@ -65,13 +69,26 @@ export function ScopeCheck({ project, sow, docs, mode }: {
     return key;
   };
 
+  const fileOf = (path: string) => path.split("/").pop()!;
+  const missingSamples = SAMPLES.filter((x) => !rows.some((r) => r.file === fileOf(x.path)));
+  const sampleSow = sow?.fileName === SAMPLE_SOW.fileName;
+
+  // Add whichever sample documents aren't on the project yet.
   const addSamples = async () => {
-    for (const s of SAMPLES) {
-      const key = addRow(s.type);
-      const name = s.path.split("/").pop()!;
-      upload(key, s.type, await sampleFile(s.path, name));
-    }
+    const todo = missingSamples;
+    const keys = todo.map((x) => addRow(x.type));
+    for (const [i, x] of todo.entries()) await upload(keys[i], x.type, await sampleFile(x.path, fileOf(x.path))); // in order, so the list stays stable
+    if (todo.length) toast("Sample files added. Select Let’s compare.");
   };
+
+  const auto = useRef(false);
+  useEffect(() => {
+    if (!autoSamples || auto.current) return;
+    auto.current = true;
+    router.replace(`/projects/${project.id}/check`, { scroll: false });
+    if (rows.length === 0) addSamples();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSamples]);
 
   const compare = async () => {
     setRunError("");
@@ -153,6 +170,16 @@ export function ScopeCheck({ project, sow, docs, mode }: {
               <Eyebrow>Check against it</Eyebrow>
               <span className="text-[12.5px] text-faint">PDF, DOCX or TXT · 10 MB per file</span>
             </div>
+            {rows.length === 0 && (
+              <div className="pop rounded-2xl bg-accent-soft ring-1 ring-accent/20 p-5 flex flex-wrap items-center gap-4">
+                <span className="w-10 h-10 rounded-xl bg-surface ring-1 ring-line inline-flex items-center justify-center shrink-0 text-accent"><Sparkles size={18} aria-hidden="true" /></span>
+                <div className="flex-1 min-w-[220px]">
+                  <div className="font-medium">No documents yet</div>
+                  <div className="text-[13px] text-muted">Upload your own below, or try with sample files: a PRD, compliance notes and meeting notes.</div>
+                </div>
+                <Btn variant="accent" onClick={addSamples}><Sparkles size={15} aria-hidden="true" />Try with sample files</Btn>
+              </div>
+            )}
             <ul className="flex flex-col gap-2.5">
               {rows.map((r) => (
                 <li key={r.key} className="pop rounded-2xl bg-surface ring-1 ring-line hover:ring-line-strong hover:shadow-soft transition p-3 flex flex-col gap-3">
@@ -189,8 +216,13 @@ export function ScopeCheck({ project, sow, docs, mode }: {
               <button type="button" onClick={() => addRow()} className="h-12 rounded-2xl border-[1.5px] border-dashed border-line-strong text-muted hover:text-ink hover:border-accent hover:bg-accent-soft font-medium inline-flex items-center justify-center gap-2 transition cursor-pointer">
                 <Plus size={16} aria-hidden="true" />Add document
               </button>
-              {rows.length === 0 && <Btn variant="ghost" className="h-12 rounded-2xl" onClick={addSamples}>Use sample documents</Btn>}
+              {rows.length > 0 && missingSamples.length > 0 && (
+                <Btn variant="ghost" className="h-12 rounded-2xl" onClick={addSamples}><Sparkles size={15} aria-hidden="true" />Try with sample files</Btn>
+              )}
             </div>
+            {!sampleSow && missingSamples.length > 0 && (
+              <p className="text-[12.5px] text-faint">Sample files are written to conflict with the sample SOW, so they may find little against your own SOW.</p>
+            )}
           </section>
 
           {runError && (

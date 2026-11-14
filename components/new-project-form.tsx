@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertCircle, ArrowLeft, Check, CheckCircle2, FileText, Loader2, Lock, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, CheckCircle2, FileText, Loader2, Lock, Plus, Sparkles, Trash2 } from "lucide-react";
 import { api, ApiError, extractFile, type Extracted } from "@/lib/client";
 import { TEAMS } from "@/lib/constants";
+import { SAMPLE_SOW, SAMPLE_STAKEHOLDERS } from "@/lib/samples";
 import { FileDrop, sampleFile } from "./file-drop";
 import { useToast } from "./toast";
 import { Btn, Field, Select, cx } from "./ui";
@@ -14,7 +15,7 @@ type Stake = { team: string; name: string; email: string };
 const blank = (team = "FE lead"): Stake => ({ team, name: "", email: "" });
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function NewProjectForm() {
+export function NewProjectForm({ sample = false }: { sample?: boolean }) {
   const router = useRouter();
   const toast = useToast();
   const [name, setName] = useState("");
@@ -44,20 +45,20 @@ export function NewProjectForm() {
     }
   };
 
-  const useSample = async () => {
-    setName("Clinic Portal v2");
-    const d = new Date(Date.now() + 18 * 864e5);
-    setDate(d.toISOString().slice(0, 10));
-    setStakes([
-      { team: "Sales", name: "Priya Shah", email: "priya.shah@example.com" },
-      { team: "DevOps", name: "Aman Rao", email: "aman.rao@example.com" },
-      { team: "FE lead", name: "Ananya Desai", email: "ananya.desai@example.com" },
-      { team: "BE lead", name: "Vikram Joshi", email: "vikram.joshi@example.com" },
-      { team: "Project Manager", name: "Rohan Mehta", email: "rohan.mehta@example.com" },
-      { team: "Upper management", name: "Meera Iyer", email: "meera.iyer@example.com" },
-    ]);
-    await upload(await sampleFile("/samples/SOW_Clinic-Portal_signed.txt", "SOW_Clinic-Portal_signed.txt"));
+  // Fill only what's still blank, then load the sample SOW.
+  const trySample = async () => {
+    if (!name.trim()) setName("Clinic Portal v2");
+    if (!date) setDate(new Date(Date.now() + 18 * 864e5).toISOString().slice(0, 10));
+    if (!validStake) setStakes(SAMPLE_STAKEHOLDERS.map((x) => ({ ...x })));
+    setErr({});
+    await upload(await sampleFile(`/samples/${SAMPLE_SOW.fileName}`, SAMPLE_SOW.fileName));
   };
+  const auto = useRef(false);
+  useEffect(() => {
+    if (sample && !auto.current) { auto.current = true; trySample(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sample]);
+  const usingSampleSow = sow.state === "ready" && sow.data?.fileName === SAMPLE_SOW.fileName;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,8 +75,13 @@ export function NewProjectForm() {
         method: "POST",
         json: { name, signoffDate: date, stakeholders: stakes.filter((s) => s.name.trim()), sow: { fileName: sow.data!.fileName, text: sow.data!.text } },
       });
-      toast(`Project ${res.code} created`);
-      router.push("/projects");
+      if (usingSampleSow) {
+        toast(`Project ${res.code} created · adding the sample files`);
+        router.push(`/projects/${res.id}/check?samples=1`);
+      } else {
+        toast(`Project ${res.code} created`);
+        router.push("/projects");
+      }
       router.refresh();
     } catch (e) {
       const a = e as ApiError;
@@ -92,10 +98,20 @@ export function NewProjectForm() {
         </Link>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h1 className="font-display text-[40px] leading-[1.05] font-semibold tracking-[-0.035em]">New project</h1>
-          <Btn type="button" variant="ghost" size="sm" onClick={useSample}>Fill with sample project</Btn>
         </div>
         <p className="text-muted max-w-[560px]">The signed SOW is the baseline. Every other document gets checked against it.</p>
       </header>
+
+      {sow.state === "empty" && (
+        <div className="pop rounded-2xl bg-accent-soft ring-1 ring-accent/20 p-5 flex flex-wrap items-center gap-4">
+          <span className="w-10 h-10 rounded-xl bg-surface ring-1 ring-line inline-flex items-center justify-center shrink-0 text-accent"><Sparkles size={18} aria-hidden="true" /></span>
+          <div className="flex-1 min-w-[220px]">
+            <div className="font-medium">New to Dripi? Try with sample files</div>
+            <div className="text-[13px] text-muted">Loads a sample signed SOW, then a PRD, compliance notes and meeting notes to check against it. See your first verified conflict in about a minute.</div>
+          </div>
+          <Btn type="button" variant="accent" onClick={trySample}><Sparkles size={15} aria-hidden="true" />Try with sample files</Btn>
+        </div>
+      )}
 
       <section className="rounded-2xl bg-surface ring-1 ring-line p-6 flex flex-col gap-5">
         <h2 className="text-[15px] font-semibold">Details</h2>
@@ -139,7 +155,13 @@ export function NewProjectForm() {
       <section className="rounded-2xl bg-surface ring-1 ring-line p-6 flex flex-col gap-4">
         <h2 className="text-[15px] font-semibold">Signed SOW</h2>
         {sow.state === "empty" || sow.state === "error" ? (
-          <FileDrop id="sow-file" onFile={upload} invalid={!!err.sow || sow.state === "error"} />
+          <>
+            <FileDrop id="sow-file" onFile={upload} invalid={!!err.sow || sow.state === "error"} />
+            <div className="flex flex-wrap items-center gap-2 text-[13px] text-muted">
+              No SOW handy?
+              <Btn type="button" variant="ghost" size="sm" onClick={trySample}><Sparkles size={14} aria-hidden="true" />Try with sample files</Btn>
+            </div>
+          </>
         ) : (
           <div className="pop flex items-center gap-4 p-4 rounded-xl ring-1 ring-line bg-sunken">
             <span className="w-10 h-10 rounded-lg bg-surface ring-1 ring-line inline-flex items-center justify-center shrink-0"><FileText size={18} aria-hidden="true" /></span>
@@ -148,7 +170,7 @@ export function NewProjectForm() {
               {sow.state === "uploading" ? (
                 <span className="text-[12.5px] text-muted flex items-center gap-1.5"><Loader2 size={14} className="animate-spin text-accent" aria-hidden="true" />Extracting text…</span>
               ) : (
-                <span className="text-[12.5px] text-ok flex items-center gap-1.5"><CheckCircle2 size={14} aria-hidden="true" />Text extracted · {sow.data?.charCount.toLocaleString()} characters · original file discarded</span>
+                <span className="text-[12.5px] text-ok flex items-center gap-1.5"><CheckCircle2 size={14} aria-hidden="true" />{usingSampleSow ? "Sample SOW" : "Text extracted"} · {sow.data?.charCount.toLocaleString()} characters{usingSampleSow ? "" : " · original file discarded"}</span>
               )}
             </div>
             {sow.state === "ready" && <Btn type="button" variant="quiet" size="sm" onClick={() => setSow({ state: "empty" })}>Replace</Btn>}
@@ -172,7 +194,7 @@ export function NewProjectForm() {
         <div className="flex gap-2 items-center">
           {err.form && <span className="text-[12.5px] text-high" role="alert">{err.form}</span>}
           <Link href="/projects" className="inline-flex items-center h-10 px-4 rounded-[10px] text-sm font-medium text-muted hover:bg-sunken hover:text-ink">Cancel</Link>
-          <Btn type="submit" disabled={busy}>{busy && <Loader2 size={15} className="animate-spin" aria-hidden="true" />}Create project</Btn>
+          <Btn type="submit" disabled={busy}>{busy && <Loader2 size={15} className="animate-spin" aria-hidden="true" />}{usingSampleSow ? "Create and add sample files" : "Create project"}</Btn>
         </div>
       </div>
     </form>

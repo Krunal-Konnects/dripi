@@ -3,7 +3,8 @@ import { requireUser } from "@/lib/queries";
 
 export const metadata = { title: "New project · Dripi" };
 
-export default async function NewProjectPage() {
+export default async function NewProjectPage(props: PageProps<"/projects/new">) {
   await requireUser();
-  return <NewProjectForm />;
+  const sp = await props.searchParams;
+  return <NewProjectForm sample={sp.sample === "1"} />;
 }

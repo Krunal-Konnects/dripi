@@ -9,6 +9,7 @@ export const metadata = { title: "Scope check · Dripi" };
 export default async function CheckPage(props: PageProps<"/projects/[id]/check">) {
   const user = await requireUser();
   const { id } = await props.params;
+  const sp = await props.searchParams;
   const project = await getProject(user.id, id);
   if (!project) notFound();
   const [{ sow, docs }, results] = await Promise.all([getProjectDocs(id), getLatestResults(id)]);
@@ -22,6 +23,7 @@ export default async function CheckPage(props: PageProps<"/projects/[id]/check">
       sow={sow}
       docs={docs}
       mode={{ provider: provider(), model: modelLabel() }}
+      autoSamples={sp.samples === "1"}
     />
   );
 }

@@ -32,6 +32,9 @@ export function ProjectsView({ projects }: { projects: P[] }) {
           <Link href="/projects/new" className="inline-flex items-center gap-2 h-10 px-4 rounded-[10px] bg-ink text-bg text-sm font-medium hover:opacity-90 transition">
             <Plus size={16} aria-hidden="true" />Create your first project
           </Link>
+          <Link href="/projects/new?sample=1" className="text-[13.5px] font-medium text-accent underline underline-offset-4 decoration-accent/40 hover:decoration-accent">
+            or try with sample files
+          </Link>
         </div>
       ) : (
         <section className="rounded-2xl bg-surface ring-1 ring-line overflow-hidden">
